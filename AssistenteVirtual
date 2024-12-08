@@ -1,0 +1,54 @@
+import pyttsx3
+import speech_recognition as sr
+import webbrowser
+import requests
+from geopy.geocoders import Nominatim
+
+def text_to_speech(text):
+    engine = pyttsx3.init()
+    engine.say(text)
+    engine.runAndWait()
+
+def speech_to_text():
+    recognizer = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Fale algo...")
+        audio = recognizer.listen(source)
+    try:
+        return recognizer.recognize_google(audio, language="pt-BR")
+    except sr.UnknownValueError:
+        return "Não entendi o que você disse."
+    except sr.RequestError:
+        return "Erro no serviço de reconhecimento de fala."
+
+def abrir_pesquisa_wikipedia(query):
+    webbrowser.open(f"https://pt.wikipedia.org/wiki/{query}")
+
+def abrir_youtube():
+    webbrowser.open("https://www.youtube.com")
+
+def localizar_farmacia_mais_proxima():
+    geolocator = Nominatim(user_agent="assistente_virtual")
+    location = geolocator.geocode("farmácia mais próxima")
+    if location:
+        text_to_speech(f"A farmácia mais próxima está em {location.address}")
+        webbrowser.open(f"https://www.google.com/maps/search/farmácia+mais+próxima/")
+
+def main():
+    while True:
+        comando = speech_to_text().lower()
+        if "pesquisar no wikipedia" in comando:
+            text_to_speech("O que você gostaria de pesquisar?")
+            pesquisa = speech_to_text()
+            abrir_pesquisa_wikipedia(pesquisa)
+        elif "abrir youtube" in comando:
+            text_to_speech("Abrindo o YouTube.")
+            abrir_youtube()
+        elif "localização da farmácia mais próxima" in comando:
+            text_to_speech("Procurando farmácia mais próxima.")
+            localizar_farmacia_mais_proxima()
+        elif "sair" in comando:
+            text_to_speech("Encerrando. Até logo!")
+            break
+        else:
+            text_to_speech("Comando não reconhecido.")
